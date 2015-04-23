@@ -1,6 +1,7 @@
 package com.example.blmarket.irservice.service;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,8 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.JsonReader;
 import android.util.Log;
+
+import com.example.blmarket.irservice.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -113,9 +116,10 @@ public class WebServer extends Service {
         }
 
         Log.i("WebServer", "Starting service");
-        Notification notification = new NotificationCompat.Builder(this)
+        Notification notification = new Notification.Builder(this)
                 .setContentTitle("IR Service Title")
                 .setTicker("IR Service Ticker : " + address.getHostAddress())
+                //.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0))
                 .setContentText("IR Service Text").build();
 
         startForeground(NOTIFICATION_ID, notification);
