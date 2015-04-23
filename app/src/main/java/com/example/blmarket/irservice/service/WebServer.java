@@ -9,7 +9,6 @@ import android.hardware.ConsumerIrManager;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.JsonReader;
 import android.util.Log;
 
@@ -116,11 +115,9 @@ public class WebServer extends Service {
         }
 
         Log.i("WebServer", "Starting service");
+
         Notification notification = new Notification.Builder(this)
-                .setContentTitle("IR Service Title")
-                .setTicker("IR Service Ticker : " + address.getHostAddress())
-                //.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0))
-                .setContentText("IR Service Text").build();
+                .setTicker("IR Service Ticker : " + address.getHostAddress()).build();
 
         startForeground(NOTIFICATION_ID, notification);
         WebDaemon daemon = new WebDaemon();
