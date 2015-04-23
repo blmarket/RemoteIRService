@@ -1,29 +1,24 @@
 package com.example.blmarket.irservice.service;
 
 import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.hardware.ConsumerIrManager;
 import android.net.wifi.WifiManager;
-import android.os.Binder;
 import android.os.IBinder;
-import android.util.JsonReader;
 import android.util.Log;
 
-import com.example.blmarket.irservice.MainActivity;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 
-import fi.iki.elonen.NanoHTTPD;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
 /**
  * Created by blmarket on 2015-04-19.
@@ -32,9 +27,7 @@ public class WebServer extends Service {
     private static final int NOTIFICATION_ID = 1;
     private static final int PORT = 8080;
 
-    static class MyBinder extends Binder {
-    }
-
+    /*
     private class WebDaemon extends NanoHTTPD {
         private final ConsumerIrManager service = (ConsumerIrManager) getApplicationContext().getSystemService(Context.CONSUMER_IR_SERVICE);
 
@@ -46,14 +39,24 @@ public class WebServer extends Service {
         public Response serve(IHTTPSession session) {
             Method method = session.getMethod();
             if (method != method.POST) {
-                return new Response(Response.Status.BAD_REQUEST, "application/json", "POST only please");
+                IOUtils.closeQuietly(session.getInputStream());
+                return new Response(Response.Status.BAD_REQUEST, "text/plain", "POST only please");
             }
 
-            JsonReader reader = null;
+            byte[] arr = new byte[102476];
+
+            try {
+                IOUtils.readFully(session.getInputStream(), arr);
+                System.out.println(ByteBuffer.wrap(arr).toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            JsonReader reader;
             Integer freq = null;
             ArrayList<Integer> codes = null;
             try {
-                reader = new JsonReader(new BufferedReader(new InputStreamReader(session.getInputStream())));
+                reader = new JsonReader(new InputStreamReader(session.getInputStream()));
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String name = reader.nextName();
@@ -73,6 +76,7 @@ public class WebServer extends Service {
                     }
                 }
                 reader.endObject();
+                reader.close();
             } catch (Exception ex) {
                 Log.e("WebServer", "json read error", ex);
             }
@@ -93,13 +97,11 @@ public class WebServer extends Service {
             System.out.println("Sending OK");
             return new Response(Response.Status.OK, "application/json", "\"OK\"");
         }
-    }
-
-    private static final IBinder localBinder = new MyBinder();
+    }*/
 
     @Override
     public IBinder onBind(Intent intent) {
-        return localBinder;
+        return null;
     }
 
     @Override
@@ -120,11 +122,23 @@ public class WebServer extends Service {
                 .setTicker("IR Service Ticker : " + address.getHostAddress()).build();
 
         startForeground(NOTIFICATION_ID, notification);
-        WebDaemon daemon = new WebDaemon();
+
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            daemon.start();
-        } catch (IOException e) {
-            Log.e("WebServer", "Got IOException while running server", e);
+            ServerBootstrap bootstrap = new ServerBootstrap()
+                    .group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new HttpServerInitializer());
+
+            Channel ch = bootstrap.bind(PORT).sync().channel();
+            ch.closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
         }
         return START_STICKY;
     }
