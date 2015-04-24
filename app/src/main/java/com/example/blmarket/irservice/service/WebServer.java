@@ -125,21 +125,13 @@ public class WebServer extends Service {
 
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-        try {
-            ServerBootstrap bootstrap = new ServerBootstrap()
-                    .group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpServerInitializer());
+        ServerBootstrap bootstrap = new ServerBootstrap()
+                .group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new HttpServerInitializer());
 
-            Channel ch = bootstrap.bind(PORT).sync().channel();
-            ch.closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-        }
+        bootstrap.bind(PORT);
         return START_STICKY;
     }
 }

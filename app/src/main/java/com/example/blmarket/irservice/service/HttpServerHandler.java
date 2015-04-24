@@ -5,9 +5,12 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.json.JsonObjectDecoder;
 
 /**
  * Created by blmarket on 2015-04-23.
@@ -15,14 +18,24 @@ import io.netty.handler.codec.http.HttpVersion;
 public class HttpServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest) {
-            HttpRequest request = (HttpRequest) msg;
-            System.out.println(request);
+        if (!(msg instanceof HttpRequest)) return;
 
-            DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer("Hello World".getBytes()));
+        HttpRequest request = (HttpRequest) msg;
+        System.out.println(request);
+        if (request.method().equals(HttpMethod.POST) == false) {
+            DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST, Unpooled.wrappedBuffer("POST only please".getBytes()));
             ctx.write(response).addListener(ChannelFutureListener.CLOSE);
+            return;
         }
-        super.channelRead(ctx, msg);
+
+        new JsonObjectDecoder()
+
+        new HttpPostRequestDecoder(request).
+
+        request.
+
+        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer("Hello World".getBytes()));
+        ctx.write(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     @Override
