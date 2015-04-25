@@ -2,7 +2,9 @@ package com.example.blmarket.irservice.service;
 
 import android.app.Notification;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.ConsumerIrManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.util.Log;
@@ -13,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -29,7 +30,7 @@ public class WebServer extends Service {
 
     /*
     private class WebDaemon extends NanoHTTPD {
-        private final ConsumerIrManager service = (ConsumerIrManager) getApplicationContext().getSystemService(Context.CONSUMER_IR_SERVICE);
+        private final ConsumerIrManager service = (ConsumerIrManager)
 
         public WebDaemon() {
             super(PORT);
@@ -125,11 +126,12 @@ public class WebServer extends Service {
 
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
+        ConsumerIrManager service = (ConsumerIrManager) getApplicationContext().getSystemService(Context.CONSUMER_IR_SERVICE);
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new HttpServerInitializer());
+                .childHandler(new HttpServerInitializer(service));
 
         bootstrap.bind(PORT);
         return START_STICKY;
