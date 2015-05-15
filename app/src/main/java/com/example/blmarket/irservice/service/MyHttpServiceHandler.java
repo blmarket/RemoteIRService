@@ -44,7 +44,6 @@ public class MyHttpServiceHandler extends SimpleChannelInboundHandler<FullHttpRe
             reader.beginObject();
             while (reader.hasNext()) {
                 String name = reader.nextName();
-                System.out.println(name);
                 switch (name) {
                     case "freq":
                         freq = reader.nextInt();
