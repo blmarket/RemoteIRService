@@ -17,3 +17,7 @@ curl -v -X POST -H 'Content-Type: application/json' -d '{"freq":"38400","code":[
 ```
 
 this sends 'HDMI 3' signal to LG TV. codes can be retrieved from several sites.
+
+## Caveats
+
+Due to android battery management, response is not that fast T.T
