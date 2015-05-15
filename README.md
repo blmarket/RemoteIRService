@@ -20,4 +20,4 @@ this sends 'HDMI 3' signal to LG TV. codes can be retrieved from several sites.
 
 ## Caveats
 
-Due to android battery management, response is not that fast T.T
+Response is not that fast T.T I guess it's due to android battery management.
